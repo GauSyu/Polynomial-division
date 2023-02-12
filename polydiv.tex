@@ -1,20 +1,311 @@
-\documentclass{article}
-%\url{https://tex.stackexchange.com/q/444837/86}
-\usepackage{polydiv}
+%LaTeX Template 
+%%	by	Xu Gao (gausyu@gmail.com)
+%%LPPL: http://www.latex-project.org/lppl.txt
+%------------------------
+%The following is the Preamble
+%------------------------
+\documentclass[11pt]{article}
+%This is the document class. 
+%%	Most common: article, beamer, book, etc.
+%%	11pt means the default font size is 11pt. One can also use 10pt, 11pt, or 12pt.
+%%	See https://en.wikibooks.org/wiki/LaTeX/Document_Structure#Document_classes for explaination.
+%------------------------
+%Packages
+%------------------------
+\usepackage[a4paper,total={6in, 9in}]{geometry} 
+%This aims to customize page layout
+\usepackage[T1]{fontenc}
+%Using T1 font
+\usepackage[leqno]{mathtools}
+%The main MATH package (for whom may wonder, mathtools load amsmath automatically, so no need \usepackage{amsmath})
+\usepackage{amsthm}
+%This defines the theorem enviroments
+\usepackage{amssymb}
+%Math symbols
+\usepackage{bm}
+%Bold math fonts, provide \bm{} command
+\usepackage[scr=rsfs,cal=euler]{mathalpha}
+%Math fonts 
+%%The package provides means of loading maths alphabets (such as are normally addressed via macros \mathcal, \mathbb, \mathfrak and \mathscr)
+%%How to use? "scr=" set what font \mathscr use, "cal=" set what font \mathcal use, "bb=" set what font \mathbb use, and "frak=" set what font \mathfrak use.
+\usepackage{tikz}
+%Drawing
+\usepackage{graphicx}
+%Support for graphics
+\usepackage{hyperref}
+\usepackage[nameinlink]{cleveref}
+%Hyper links
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	urlcolor=magenta
+}
+%Color links
+\usepackage{etoolbox}
+%Programming
+\usepackage[shortlabels]{enumitem}
+%Enable enumerate modification
+\usepackage{tcolorbox}
+%provides an environment for coloured and framed text boxes with a heading line.
+\tcbset{colback=white}
+%------------------------
+%Theorem-like Enviroments
+%------------------------
+\crefname{equation}{}{}
+\theoremstyle{plain}
+%This is the theorem style, plain means blod title and italic body
+\newtheorem{theorem}{Theorem}
+%This is how you define a theorem-like enviroment.
+\newtheorem{lemma}[equation]{Lemma}
+\newtheorem{proposition}[equation]{Proposition}
+%The option [equation] means the lemmas are numbered following the same system of equation.
+\newtheorem*{propstar}{Proposition}
+%Star version defines unnumbered enviroments
+\theoremstyle{definition}
+%This is the theorem style, definition means blod title and normal body
+\newtheorem*{defn}{Definition}
+\newtheorem{example}[equation]{Example}
+%The option [equation] means the examples are numbered following the same system of equation.
+\newtheorem{problem}{Problem}
+%This is the enviroment used as problems in HWs.
+\theoremstyle{remark}
+%This is the theorem style, remark means italic title and normal body
+\newtheorem*{remark}{Remark}
+\newtheorem*{hint}{Hint}
+\newtheorem*{optional}{Optional}
+%Remark enviroment
+\numberwithin{equation}{problem}
+%Let equations be numbered with in each problems.
+\NewDocumentEnvironment{solution} {o} 
+{\begin{proof}[\IfNoValueTF{#1}{\textbf{Solution}}{\textbf{Solution} (#1)}]}{\end{proof}}
+%This defines the enviroment for you to write solutions.
+%------------------------
+\newlist{listinprob}{enumerate}{1}
+\setlist[listinprob]{label=(\alph{listinprobi}),
+                  ref=\theproblem.(\alph{listinprobi})}
+\crefname{listinprobi}{problem}{problems}
+\Crefname{listinprobi}{Problem}{Problems}
+%This defines a new list type used in the enviroment problem.
+%------------------------
+%DocumentCommands
+%------------------------
+%Notations for number sets
+\NewDocumentCommand \N {} { \mathbb{N} }%Natural numbers
+\NewDocumentCommand \Z {} { \mathbb{Z} }%Integers
+\NewDocumentCommand \Q {} { \mathbb{Q} }%Rational Numbers
+\NewDocumentCommand \R {} { \mathbb{R} }%Real Numbers
+\NewDocumentCommand \C {} { \mathbb{C} }%Complex Numbers
+\NewDocumentCommand \F {} { \mathbb{F} }%Field
+\NewDocumentCommand \scrO {} {	\mathscr{O}	}%Dedekind doamin
+%Notations for maps
+\DeclareMathOperator{\id}{id} % identity
+\DeclareMathOperator{\pr}{pr} % projection
+\DeclareMathOperator{\pt}{pt} % point
+\DeclareMathOperator{\res}{res} % restriction
+%PairedDelimiters
+\DeclarePairedDelimiterX\abs[1]\lvert\rvert
+  { \ifblank{#1}{\:\cdot\:}{#1} }
+%abstract value function
+\DeclarePairedDelimiterX\norm[1]\lVert\rVert
+  { \ifblank{#1}{\:\cdot\:}{#1} }
+%the norm function
+\DeclarePairedDelimiterX\ceil[1]\lceil\rceil
+  { \ifblank{#1}{\:\cdot\:}{#1} }
+%ceil function
+\DeclarePairedDelimiterX\floor[1]\lfloor\rfloor
+  { \ifblank{#1}{\:\cdot\:}{#1} }
+%floor function
+\DeclarePairedDelimiterX\pairing[2]\langle\rangle
+  { \ifblank{#1}{\:\cdot\:}{#1}, \ifblank{#2}{\:\cdot\:}{#2} }
+\DeclarePairedDelimiterX\inner[2]\lparen\rparen
+  { \ifblank{#1}{\:\cdot\:}{#1}, \ifblank{#2}{\:\cdot\:}{#2} }
+%Inner product
+\providecommand\given{}
+\newcommand\SetSymbol[1][]
+  { \nonscript\:#1\vert\allowbreak\nonscript\:\mathopen{} }
+\DeclarePairedDelimiterX\Set[1]\{\}
+  { \renewcommand\given{\SetSymbol[\delimsize]}#1 }
+%a set
+%
+%Miscellaneous
+\NewDocumentCommand \vect { m } { \mathbf{#1} }
+%Vector
+\RenewDocumentCommand \le {} { \leqslant }
+\RenewDocumentCommand \ge {} { \geqslant }
+%Change the inequality symbols
+\NewDocumentCommand \tforall {} {\quad\text{for all}\quad}
+%------------------------
+% Additional math symbols, used for the Math 110 course
+\DeclareMathOperator*\GCD{GCD}
+\DeclareMathOperator*\LCM{LCM}
+\usepackage{derivative}% Support typing calculus notations.
+\usepackage{polydiv}%Need to manually add the .sty file.
+\PolyOptions{variable={{\color{teal}{T}}},base=7,coef=\overline}
+%------------------------
+\allowdisplaybreaks
+%Allow a long equation to display in more than one page.
 
+%The following change the default layout of title
+\makeatletter
+\def\@maketitle{%
+	\newpage
+	\null
+	\vskip 2em%
+	\begin{center}%
+		\let \footnote \thanks
+		\sffamily 
+		{\LARGE \@title \par}%
+		\vskip 1.5em%
+		{\large \@subtitle \par}%
+		\vskip 1em%
+		{\large \@date}%
+	\end{center}%
+	\par
+	\vskip 1.5em%
+}	
+\global\let\@subtitle\@empty
+\DeclareRobustCommand*{\subtitle}[1]{\gdef\@subtitle{#1}}
+\makeatother
+%Leave this change alone if you don't know what it means
+
+%------------------------
+%Information of the file
+%------------------------
+\title{Arithmetic of Polynomials}
+%The title of the file
+\author{Xu Gao}
+%The author
+%The subtitle
+\date{} 
+%The date, if commented, the value will be \today
+ 
+%------------------------
+%Document starts here
+%------------------------
 \begin{document}
+\maketitle
 
-\PolySet{p}{1,0,1,1}
-\PolySet{q}{2,1}
+\section{Define and display polynomials}
+\begin{itemize}
+	\item 
+Define polynomials by claiming their coefficients:
+\begin{verbatim}
+	\PolySet{f}{1,0,4,0,2}
+	\PolySet{g}{1,6,3}
+\end{verbatim}
+\PolySet{f}{1,0,4,0,2}
+\PolySet{g}{1,6,3}
 
-\PolySet{r}{1,0,1,0}
+\item 
+Display Polynomials
+\begin{verbatim}
+	\[\PolyPrint{f}\qquad\PolyPrint{g}\]
+\end{verbatim}
 
-\[
-  \PolyLongDiv[base=3]{r}{q}
-  \]
+\[\PolyPrint{f}\qquad\PolyPrint{g}\]
 
-\[
-  \PolyLongDiv[base=3]{p}{q}
-  \]
+\item 
+\begingroup
+Change the variable (globally)
+\begin{verbatim}
+	\PolyOptions{variable={x}}
+	\[\PolyPrint{f}\qquad\PolyPrint{g}\]
+\end{verbatim}
+\PolyOptions{variable={x}}
+\[\PolyPrint{f}\qquad\PolyPrint{g}\]
+\endgroup
+
+Or put the option into argument (so change the variable locally),
+\begin{verbatim}
+	\[\PolyPrint[variable={x}]{f}\qquad\PolyPrint[variable={x}]{g}\]
+\end{verbatim}
+\[\PolyPrint[variable={x}]{f}\qquad\PolyPrint[variable={x}]{g}\]
+
+\item 
+One can also change the modulus:
+\begin{verbatim}
+	\[\PolyPrint[base=5]{f}\qquad\PolyPrint[base=5]{g}\]
+	\[\PolyPrint[base=4]{f}\qquad\PolyPrint[base=3]{g}\]
+\end{verbatim}
+\[\PolyPrint[base=5]{f}\qquad\PolyPrint[base=5]{g}\]
+\[\PolyPrint[base=4]{f}\qquad\PolyPrint[base=3]{g}\]
+
+\item 
+Get rid of the bar:
+\begin{verbatim}
+	\[\PolyPrint[coef=]{f}\qquad\PolyPrint[coef=]{g}\]
+\end{verbatim}
+\[\PolyPrint[coef=]{f}\qquad\PolyPrint[coef=]{g}\]
+
+\end{itemize}
+
+
+
+
+
+
+
+
+\section{Arithmetic of polynomials}
+We keep use polynomials $f$ and $g$ from previous section (with the modulus $7$).
+\PolySet{f}{1,0,4,0,2}
+\PolySet{g}{1,6,3}
+\begin{itemize}
+	\item 
+	Addition:
+	\begin{verbatim}
+		\[\PolyPrint{f}+\PolyPrint{g}=\PolyAdd{f}{g}\]
+	\end{verbatim}
+	\[\PolyPrint{f}+\PolyPrint{g}=\PolyAdd{f}{g}\]
+	\item 
+	Multiplication
+	\begin{verbatim}
+		\[(\PolyPrint{f})(\PolyPrint{g})=\PolyMult{f}{g}\]
+	\end{verbatim}
+	\[(\PolyPrint{f})(\PolyPrint{g})=\PolyMult{f}{g}\]
+	\item 
+	Long division
+	\begin{verbatim}
+		\[\PolyLongDiv{f}{g}\]
+	\end{verbatim}
+	\[\PolyLongDiv{f}{g}\]
+	\item 
+	Short division
+	\begin{verbatim}
+		\[\PolyShortDiv{f}{g}\]
+	\end{verbatim}
+	\[\PolyShortDiv{f}{g}\]
+	\item 
+	(Euclidean) division algorithm
+	\begin{verbatim}
+		\[\PolyEuclid{f}{g}\]
+	\end{verbatim}
+	\[\PolyEuclid{f}{g}\]
+\end{itemize}
+
+\section*{Install}
+You need to manually out the ``polydiv.sty'' into your working folder in order to use above.
+
+\clearpage
+\section*{Practices}
+Try to practice yourself as follows: 
+\begin{enumerate}
+	\item 
+	Choose a modulus and start with any two polynomials $f$ and $g$. 
+%-------------Change what below---------------
+	\PolyOptions{base=5}
+	\PolySet{f}{1,0,4,0,2}
+	\PolySet{g}{1,6,3}
+%-------------Change what above---------------
+	\item 
+	Try to do the long division or Euclidean algorithm by yourself. Then verify your answer by running the corresponding code.
+%--Uncomment what below to verify your answer----
+	% \[\PolyLongDiv{f}{g}\]
+	% \[\PolyEuclid{f}{g}\]
+%--Uncomment what above to verify your answer----
+\end{enumerate}
+
+
+
 
 \end{document}

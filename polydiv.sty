@@ -1,3 +1,5 @@
+%Original by Andrew Stacey \url{https://tex.stackexchange.com/q/444837/86}, 
+%Modified by Xu Gao
 \ProvidesPackage{polydiv}
 \RequirePackage{xparse,expl3}
 \ExplSyntaxOn
@@ -14,9 +16,13 @@
 \tl_new:N \l__poly_longdiv_sep_tl
 \tl_new:N \l__poly_oline_tl
 \tl_new:N \l__poly_uline_tl
+\tl_new:N \l__poly_coef_tl
+\tl_new:N \l__poly_align_tl
 \tl_set:Nn \l__poly_var_tl {x}
 \tl_set:Nn \l__poly_sep_tl {}
 \tl_set:Nn \l__poly_longdiv_sep_tl {}
+\tl_set:Nn \l__poly_coef_tl {}
+\tl_set:Nn \l__poly_align_tl {}
 \int_new:N \l__poly_deg_int
 \int_new:N \l__poly_pad_int
 \int_new:N \l__poly_base_int
@@ -32,6 +38,9 @@
 \int_set:Nn \l__poly_pad_int{3}
 \seq_new:N \l__poly_gtmpa_seq
 \seq_new:N \l__poly_mod_seq
+
+% \seq_new:N \l__poly_zeropoly_seq
+% \seq_set_from_clist:Nn \l__poly_zeropoly_seq {0}
 
 \keys_define:nn { polynomial }
 {
@@ -49,9 +58,13 @@
   variable .tl_set:N = \l__poly_var_tl,
   var .tl_set:N = \l__poly_var_tl,
 %  trailing .bool_set:N = \l__poly_trailing_bool
+	coef .tl_set:N = \l__poly_coef_tl,
+	align .tl_set:N = \l__poly_align_tl,
 }
 
 \cs_new_nopar:Npn \poly_print:N #1 {
+	\poly_reduce_mod:N #1
+%Should do mod reduction fitst
   \int_gset:Nn \l__poly_deg_int {\seq_count:N #1}
   \int_gdecr:N \l__poly_deg_int
   \int_gset:Nn \l__poly_tmpa_int {\l__poly_deg_int -
@@ -80,14 +93,14 @@
           - \tl_use:N \l__poly_sep_tl
 	  \bool_if:nF {\int_compare_p:n {##1 == -1} && \int_compare_p:n {\l__poly_deg_int > 0}}
 	  {
-	    \int_eval:n {-##1}
+	    \l__poly_coef_tl{\int_eval:n {-##1}}
 	  }
 	}
 	{
 	  \bool_if:NF \l__poly_first_bool {\tl_use:N \l__poly_sep_tl+} \tl_use:N \l__poly_sep_tl
 	  \bool_if:nF {\int_compare_p:n {##1 == 1} && \int_compare_p:n {\l__poly_deg_int > 0}}
 	  {
-	    ##1
+	    \l__poly_coef_tl{##1}
 	  }
 	}
 	\int_compare:nT {\l__poly_deg_int > 0}
@@ -321,6 +334,85 @@
   \group_end:
 }
 \cs_generate_variant:Nn \poly_longdiv:NN {cc}
+
+\cs_new_nopar:Npn \poly_shortdiv:NNNN #1#2#3#4 {
+  \group_begin:
+  \seq_clear_new:N \l__poly_quotient_seq
+  \seq_clear_new:N \l__poly_remainder_seq
+  \seq_clear_new:N \l__poly_factor_seq
+  \seq_set_eq:NN \l__poly_remainder_seq #1
+  \int_zero:N \l__poly_cstage_int
+  \bool_do_while:nn {
+    \poly_is_divisible_p:NN \l__poly_remainder_seq #2
+    &&
+    (\l__poly_stage_bool || \int_compare_p:n {\l__poly_stage_int > \l__poly_cstage_int})
+  }
+  {
+    \poly_div:NNN \l__poly_factor_seq \l__poly_remainder_seq #2
+    \poly_add:NNN \l__poly_tmpa_seq \l__poly_factor_seq \l__poly_quotient_seq
+    \seq_set_eq:NN \l__poly_quotient_seq \l__poly_tmpa_seq
+    \poly_mul:NNN \l__poly_tmpa_seq \l__poly_factor_seq #2
+    \int_incr:N \l__poly_cstage_int
+
+    \bool_if:nT {\l__poly_stage_bool || \int_compare_p:n
+      {\l__poly_stage_int > \l__poly_cstage_int}}
+    {
+      \poly_sub:NNN \l__poly_tmpb_seq \l__poly_remainder_seq \l__poly_tmpa_seq
+      \seq_set_eq:NN \l__poly_remainder_seq \l__poly_tmpb_seq
+      \poly_trim:N \l__poly_remainder_seq
+      \int_incr:N \l__poly_cstage_int
+    }
+  }
+	\seq_gset_eq:NN #3 \l__poly_quotient_seq
+	\seq_gset_eq:NN #4 \l__poly_remainder_seq
+  \group_end:
+}
+
+\cs_new_nopar:Npn \poly_shortdiv:NN #1#2 {
+  \group_begin:
+  \seq_clear_new:N \l__poly_quotient_seq
+  \seq_clear_new:N \l__poly_remainder_seq
+	\poly_shortdiv:NNNN #1#2 \l__poly_quotient_seq \l__poly_remainder_seq
+
+	\poly_print:N #1 
+	{=}
+	\left(	\poly_print:N \l__poly_quotient_seq	\right)
+	\left(	\poly_print:N #2	\right)
+	{+}
+	\left(	\poly_print:N \l__poly_remainder_seq	\right)
+  \group_end:
+}
+\cs_generate_variant:Nn \poly_shortdiv:NN {cc}
+
+\cs_new_nopar:Npn \poly_Euclid:NN #1#2 {
+  \group_begin:
+  \seq_clear_new:N \l__poly_divided_seq
+  \seq_clear_new:N \l__poly_divisor_seq
+  \seq_clear_new:N \l__poly_quotient_seq
+  \seq_clear_new:N \l__poly_remainder_seq
+  \seq_set_eq:NN \l__poly_divided_seq #1
+  \seq_set_eq:NN \l__poly_divisor_seq #2
+
+	\begin{aligned}
+		\int_until_do:nn {
+			\seq_count:N \l__poly_divisor_seq = 1
+		}
+		{
+			\poly_shortdiv:NNNN \l__poly_divided_seq \l__poly_divisor_seq  \l__poly_quotient_seq \l__poly_remainder_seq
+			\poly_print:N \l__poly_divided_seq &=
+			\left(	\poly_print:N \l__poly_quotient_seq	\right)
+			\left(	\poly_print:N \l__poly_divisor_seq	\right)
+			{+}
+			\left(	\poly_print:N \l__poly_remainder_seq	\right)\\
+			\seq_set_eq:NN \l__poly_divided_seq \l__poly_divisor_seq
+			\seq_set_eq:NN \l__poly_divisor_seq \l__poly_remainder_seq
+		}
+	\end{aligned}
+  \group_end:
+}
+\cs_generate_variant:Nn \poly_Euclid:NN {cc}
+
+
 \NewDocumentCommand \PolyPrint { O{} m } {
   \group_begin:
   \keys_set:nn { polynomial }
@@ -342,4 +434,51 @@
   \poly_longdiv:cc {polynomial #2} {polynomial #3}
   \group_end:
 }
+\NewDocumentCommand \PolyShortDiv {O{} m m } {
+  \group_begin:
+  \keys_set:nn { polynomial }
+  {
+    #1
+  }
+  \poly_shortdiv:cc {polynomial #2} {polynomial #3}
+  \group_end:
+}
+\NewDocumentCommand \PolyAdd {O{} m m } {
+  \group_begin:
+  \seq_clear_new:N \l__poly_tmpa_seq	
+  \keys_set:nn { polynomial }
+  {
+    #1
+  }
+  \poly_add:Ncc \l__poly_tmpa_seq {polynomial #2} {polynomial #3}
+	\poly_print:N \l__poly_tmpa_seq
+  \group_end:
+}
+\NewDocumentCommand \PolyMult {O{} m m } {
+  \group_begin:
+  \seq_clear_new:N \l__poly_tmpa_seq	
+  \keys_set:nn { polynomial }
+  {
+    #1
+  }
+  \poly_mul:Ncc \l__poly_tmpa_seq {polynomial #2} {polynomial #3}
+	\poly_print:N \l__poly_tmpa_seq
+  \group_end:
+}
+\NewDocumentCommand \PolyEuclid {O{} m m } {
+  \group_begin:
+  \keys_set:nn { polynomial }
+  {
+    #1
+  }
+  \poly_Euclid:cc {polynomial #2} {polynomial #3}
+  \group_end:
+}
+\NewDocumentCommand \PolyOptions {m} {
+	\keys_set:nn { polynomial }
+		{
+			#1
+		}
+}
 \ExplSyntaxOff
+
