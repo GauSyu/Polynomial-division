@@ -39,6 +39,11 @@
 \seq_new:N \l__poly_gtmpa_seq
 \seq_new:N \l__poly_mod_seq
 
+\seq_clear_new:N \g__poly_divided_seq
+\seq_clear_new:N \g__poly_divisor_seq
+\seq_clear_new:N \g__poly_quotient_seq
+\seq_clear_new:N \g__poly_remainder_seq
+
 % \seq_new:N \l__poly_zeropoly_seq
 % \seq_set_from_clist:Nn \l__poly_zeropoly_seq {0}
 
@@ -386,28 +391,27 @@
 
 \cs_new_nopar:Npn \poly_Euclid:NN #1#2 {
   \group_begin:
-  \seq_clear_new:N \l__poly_divided_seq
-  \seq_clear_new:N \l__poly_divisor_seq
-  \seq_clear_new:N \l__poly_quotient_seq
-  \seq_clear_new:N \l__poly_remainder_seq
-  \seq_set_eq:NN \l__poly_divided_seq #1
-  \seq_set_eq:NN \l__poly_divisor_seq #2
-
-	\begin{aligned}
+  \seq_gclear:N \g__poly_divided_seq
+  \seq_gclear:N \g__poly_divisor_seq
+  \seq_gclear:N \g__poly_quotient_seq
+  \seq_gclear:N \g__poly_remainder_seq
+  \seq_gset_eq:NN \g__poly_divided_seq #1
+  \seq_gset_eq:NN \g__poly_divisor_seq #2
+	\begin{aligned} 
 		\int_until_do:nn {
-			\seq_count:N \l__poly_divisor_seq = 1
+			\seq_count:N \g__poly_divisor_seq <= 1
 		}
 		{
-			\poly_shortdiv:NNNN \l__poly_divided_seq \l__poly_divisor_seq  \l__poly_quotient_seq \l__poly_remainder_seq
-			\poly_print:N \l__poly_divided_seq &=
-			\left(	\poly_print:N \l__poly_quotient_seq	\right)
-			\left(	\poly_print:N \l__poly_divisor_seq	\right)
+			\poly_shortdiv:NNNN \g__poly_divided_seq \g__poly_divisor_seq  \g__poly_quotient_seq \g__poly_remainder_seq
+			\poly_print:N \g__poly_divided_seq &=
+			\left(	\poly_print:N \g__poly_quotient_seq	\right)
+			\left(	\poly_print:N \g__poly_divisor_seq	\right)
 			{+}
-			\left(	\poly_print:N \l__poly_remainder_seq	\right)\\
-			\seq_set_eq:NN \l__poly_divided_seq \l__poly_divisor_seq
-			\seq_set_eq:NN \l__poly_divisor_seq \l__poly_remainder_seq
+			\left(	\poly_print:N \g__poly_remainder_seq	\right)\\
+			\seq_gset_eq:NN \g__poly_divided_seq \g__poly_divisor_seq
+			\seq_gset_eq:NN \g__poly_divisor_seq \g__poly_remainder_seq
 		}
-	\end{aligned}
+	\end{aligned} 
   \group_end:
 }
 \cs_generate_variant:Nn \poly_Euclid:NN {cc}
